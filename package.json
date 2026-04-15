@@ -1,0 +1,26 @@
+{
+  "name": "gpsalarm2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nithinsaigarikina/GpsAlarm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Nithinsaigarikina/GpsAlarm/issues"
+  },
+  "homepage": "https://github.com/Nithinsaigarikina/GpsAlarm#readme",
+  "dependencies": {
+    "expo": "^55.0.15",
+    "expo-location": "~55.1.8",
+    "react-native-maps": "1.27.2"
+  }
+}
