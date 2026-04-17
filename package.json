@@ -2,7 +2,7 @@
   "name": "gpsalarm2",
   "version": "1.0.0",
   "description": "",
-  "main": "App.js",
+  "main": "expo/AppEntry.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,6 +21,8 @@
   "dependencies": {
     "expo": "^55.0.15",
     "expo-location": "~55.1.8",
+    "react": "19.2.0",
+    "react-native": "0.83.4",
     "react-native-maps": "1.27.2"
   }
 }

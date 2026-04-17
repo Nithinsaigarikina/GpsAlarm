@@ -9,26 +9,23 @@ export function useLocationTracker() {
     let subscriber = null;
 
     (async () => {
-      // Ask for permission first
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setError('Location permission denied');
         return;
       }
 
-      // Start watching
       subscriber = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          distanceInterval: 10, // fire every 10 meters of movement
+          distanceInterval: 10,
         },
         (newLocation) => {
-          setLocation(newLocation.coords); // { latitude, longitude, speed, heading }
+          setLocation(newLocation.coords);
         }
       );
     })();
 
-    // Cleanup on unmount
     return () => {
       if (subscriber) subscriber.remove();
     };
