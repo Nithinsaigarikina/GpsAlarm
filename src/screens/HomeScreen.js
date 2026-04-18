@@ -3,14 +3,13 @@ import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocationTracker } from '../hooks/useLocationTracker';
 import { useDestination } from '../hooks/useDestination';
 import useProximityCheck from "../hooks/useProximityCheck";
+import useAlarm from '../hooks/useAlarm';
 
 export default function HomeScreen() {
   const { location, error } = useLocationTracker();
   const { destination, handleLongPress, clearDestination } = useDestination();
-  const { isInsideRadius, distanceKm } = useProximityCheck(
-    location,
-    destination
-  );
+  const { isInsideRadius, distanceKm } = useProximityCheck(location, destination);
+  const { isAlarmActive, dismissAlarm } = useAlarm(isInsideRadius);
 
   if (error) {
     return (
@@ -69,9 +68,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-
-
-      {destination && (
+      {destination && !isAlarmActive && (
         <TouchableOpacity style={styles.clearButton} onPress={clearDestination}>
           <Text style={styles.clearButtonText}>Clear Destination</Text>
         </TouchableOpacity>
@@ -80,6 +77,16 @@ export default function HomeScreen() {
       {!destination && (
         <View style={styles.hint}>
           <Text style={styles.hintText}>Long press on map to set destination</Text>
+        </View>
+      )}
+
+      {/* Alarm overlay */}
+      {isAlarmActive && (
+        <View style={styles.alarmOverlay}>
+          <Text style={styles.alarmText}>🔔 You're near your destination!</Text>
+          <TouchableOpacity style={styles.dismissButton} onPress={dismissAlarm}>
+            <Text style={styles.dismissButtonText}>Dismiss Alarm</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -121,14 +128,32 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   distanceText: { color: '#fff', fontSize: 13 },
-  debugText: {
+  alarmOverlay: {
     position: 'absolute',
-    top: 100,
-    alignSelf: 'center',
-    color: 'white',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 6,
-    fontSize: 10,
-    borderRadius: 8,
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 24,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  alarmText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+  dismissButton: {
+    backgroundColor: '#ff3b30',
+    paddingHorizontal: 40,
+    paddingVertical: 16,
+    borderRadius: 32,
+  },
+  dismissButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

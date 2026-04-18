@@ -1,5 +1,8 @@
 {
   "ios": {
     "bundleIdentifier": "com.anonymous.gpsalarm2"
-  }
+  },
+  "plugins": [
+    "expo-audio"
+  ]
 }
