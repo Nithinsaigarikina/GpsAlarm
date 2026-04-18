@@ -1,8 +1,37 @@
 {
-  "ios": {
-    "bundleIdentifier": "com.anonymous.gpsalarm2"
-  },
-  "plugins": [
-    "expo-audio"
-  ]
+  "expo": {
+    "name": "GPS Alarm",
+    "slug": "gpsalarm2",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.anonymous.gpsalarm2",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.nithinsai.gpsalarm",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GPS Alarm to use your location."
+        }
+      ],
+      "expo-audio",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e406bc25-c89c-4a71-9de3-e8cb9757c513"
+      }
+    }
+  }
 }
