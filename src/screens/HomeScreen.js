@@ -2,10 +2,15 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocationTracker } from '../hooks/useLocationTracker';
 import { useDestination } from '../hooks/useDestination';
+import useProximityCheck from "../hooks/useProximityCheck";
 
 export default function HomeScreen() {
   const { location, error } = useLocationTracker();
   const { destination, handleLongPress, clearDestination } = useDestination();
+  const { isInsideRadius, distanceKm } = useProximityCheck(
+    location,
+    destination
+  );
 
   if (error) {
     return (
@@ -55,6 +60,17 @@ export default function HomeScreen() {
         )}
       </MapView>
 
+      {/* Distance badge */}
+      {distanceKm !== null && (
+        <View style={styles.distanceBadge}>
+          <Text style={styles.distanceText}>
+            {distanceKm.toFixed(2)} km away {isInsideRadius ? '🔔 INSIDE RADIUS' : ''}
+          </Text>
+        </View>
+      )}
+
+
+
       {destination && (
         <TouchableOpacity style={styles.clearButton} onPress={clearDestination}>
           <Text style={styles.clearButtonText}>Clear Destination</Text>
@@ -95,4 +111,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   hintText: { color: '#fff', fontSize: 14 },
+  distanceBadge: {
+    position: 'absolute',
+    top: 60,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  distanceText: { color: '#fff', fontSize: 13 },
+  debugText: {
+    position: 'absolute',
+    top: 100,
+    alignSelf: 'center',
+    color: 'white',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 6,
+    fontSize: 10,
+    borderRadius: 8,
+  },
 });
