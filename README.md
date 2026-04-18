@@ -81,3 +81,7 @@ npx expo start
 ```
 
 Scan the QR code in your terminal with Expo Go, or press `i` to open the iOS simulator.
+
+## Tech
+
+`React Native` · `Expo` · `JavaScript` · `expo-location` · `react-native-maps` · `expo-audio` · `expo-notifications` · `expo-haptics`
