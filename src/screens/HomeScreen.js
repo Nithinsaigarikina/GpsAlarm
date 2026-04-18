@@ -1,5 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import MapView, { Marker, Circle } from 'react-native-maps';
+import { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import LeafletMap from '../components/LeafletMap';
+import * as Location from 'expo-location';
 import { useLocationTracker } from '../hooks/useLocationTracker';
 import { useDestination } from '../hooks/useDestination';
 import useProximityCheck from "../hooks/useProximityCheck";
@@ -7,9 +9,35 @@ import useAlarm from '../hooks/useAlarm';
 
 export default function HomeScreen() {
   const { location, error } = useLocationTracker();
-  const { destination, handleLongPress, clearDestination } = useDestination();
+  const { destination, handleLongPress, clearDestination, handleSetDestination } = useDestination();
   const { isInsideRadius, distanceKm } = useProximityCheck(location, destination);
   const { isAlarmActive, dismissAlarm } = useAlarm(isInsideRadius);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    setSearchError(null);
+    Keyboard.dismiss();
+    
+    try {
+      const results = await Location.geocodeAsync(searchQuery);
+      if (results && results.length > 0) {
+        const { latitude, longitude } = results[0];
+        handleSetDestination(latitude, longitude);
+        setSearchQuery('');
+      } else {
+        setSearchError('Location not found.');
+      }
+    } catch (err) {
+      setSearchError('Search failed. Check your connection.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   if (error) {
     return (
@@ -27,10 +55,16 @@ export default function HomeScreen() {
     );
   }
 
+  // Set mapType to 'standard'. 
+  // If set to 'none' on Android, it completely disables the native tile rendering 
+  // engine, which accidentally stops our custom OpenStreetMap UrlTile from drawing!
+  const mapType = 'standard';
+
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
+        mapType={mapType}
         region={{
           latitude: location.latitude,
           longitude: location.longitude,
@@ -41,6 +75,13 @@ export default function HomeScreen() {
         showsUserLocation={true}
         onLongPress={handleLongPress}
       >
+        {/* OpenStreetMap Tile Layer - high zIndex to cover the base map */}
+        <UrlTile 
+          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maximumZ={19}
+          flipY={false}
+          zIndex={1}
+        />
         {destination && (
           <>
             <Marker
@@ -58,6 +99,34 @@ export default function HomeScreen() {
           </>
         )}
       </MapView>
+
+      {/* Search Bar Overlay */}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+        style={styles.searchContainer}
+      >
+        <View style={styles.searchWrapper}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search address or city..."
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              setSearchError(null);
+            }}
+            onSubmitEditing={handleSearch}
+          />
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch} disabled={isSearching}>
+            {isSearching ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.searchButtonText}>Go</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        {searchError ? <Text style={styles.searchErrorText}>{searchError}</Text> : null}
+      </KeyboardAvoidingView>
 
       {/* Distance badge */}
       {distanceKm !== null && (
@@ -95,9 +164,56 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { flex: 1 },
+  // map: { flex: 1 }, // removed to avoid confusion
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: 'red', fontSize: 16 },
+  searchContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 40,
+    left: 20,
+    right: 20,
+    zIndex: 10,
+    elevation: 10,
+  },
+  searchWrapper: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  searchInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#000',
+  },
+  searchButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  searchErrorText: {
+    color: 'red',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 8,
+    marginTop: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
   clearButton: {
     position: 'absolute',
     bottom: 40,
@@ -120,7 +236,7 @@ const styles = StyleSheet.create({
   hintText: { color: '#fff', fontSize: 14 },
   distanceBadge: {
     position: 'absolute',
-    top: 60,
+    top: Platform.OS === 'ios' ? 120 : 110,
     alignSelf: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 16,

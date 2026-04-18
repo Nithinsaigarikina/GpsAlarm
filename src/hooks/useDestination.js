@@ -8,9 +8,13 @@ export function useDestination() {
     setDestination({ latitude, longitude });
   };
 
+  const handleSetDestination = (latitude, longitude) => {
+    setDestination({ latitude, longitude });
+  };
+
   const clearDestination = () => {
     setDestination(null);
   };
 
-  return { destination, handleLongPress, clearDestination };
+  return { destination, handleLongPress, clearDestination, handleSetDestination };
 }

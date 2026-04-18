@@ -35,14 +35,10 @@ export default function useAlarm(isInsideRadius) {
     }
   }, [isInsideRadius]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (player) {
-        player.pause();
-      }
-    };
-  }, [player]);
+  // Note: We do not manually pause the player on unmount.
+  // expo-audio's useAudioPlayer automatically manages the memory lifecycle 
+  // of the native shared object and destroys it when the component unmounts.
+  // Manually calling player.pause() here will throw NativeSharedObjectNotFoundException!
 
   async function triggerAlarm() {
     console.log('[useAlarm] triggerAlarm invoked! isInsideRadius was true.');
